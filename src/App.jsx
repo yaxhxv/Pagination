@@ -1,124 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import './App.css';
+import React, { useState, useEffect } from "react";
 
-const App = () => {
-  const [data, setData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
-  const [error, setError] = useState(false);
+const Pagination = () => {
+  const [employees, setEmployees] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    axios.get('https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json')
-      .then(response => {
-        setData(response.data);
+    fetchData();
+  }, [page]);
+
+  const fetchData = () => {
+    fetch(
+      "https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json"
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        return response.json();
       })
-      .catch(error => {
-        console.error('Error fetching the data', error);
-        setError(true);
+      .then((data) => {
+        setEmployees(data);
+        setTotalPages(Math.ceil(data.length / 10));
+      })
+      .catch((error) => {
+        alert("Failed to fetch data");
+        console.error(error);
       });
-  }, []);
+  };
 
-  if (error) {
-    return <div>Failed to fetch data</div>;
-  }
-
-  // Get current items
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
-
-  // Change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  const nextPage = () => {
-    if (currentPage < Math.ceil(data.length / itemsPerPage)) {
-      setCurrentPage(currentPage + 1);
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
     }
   };
 
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
     }
   };
 
-  return (
-    <div className="container">
-      <h1 style={{
-        display:"flex",
-        justifyContent:"space-around"
-      }} className="my-4 text-center">Employee Data Table</h1>
-      <Table data={currentItems} />
-      <Pagination
-        itemsPerPage={itemsPerPage}
-        totalItems={data.length}
-        currentPage={currentPage}
-        paginate={paginate}
-        nextPage={nextPage}
-        prevPage={prevPage}
-      />
-    </div>
-  );
-};
+  const renderTableData = () => {
+    const startIndex = (page - 1) * 10;
+    const endIndex = Math.min(startIndex + 10, employees.length);
+    const dataToShow = employees.slice(startIndex, endIndex);
 
-const Table = ({ data }) => (
-  <table className="table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
+    return dataToShow.map((employee, index) => (
+      <tr key={index}>
+        <td>{employee.id}</td>
+        <td>{employee.name}</td>
+        <td>{employee.email}</td>
+        <td>{employee.role}</td>
       </tr>
-    </thead>
-    <tbody>
-      {data.map(item => (
-        <tr key={item.id}>
-          <td>{item.id}</td>
-          <td>{item.name}</td>
-          <td>{item.email}</td>
-          <td>{item.role}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-);
-
-const Pagination = ({ itemsPerPage, totalItems, currentPage, paginate, nextPage, prevPage }) => {
-  const pageNumbers = [];
-
-  for (let i = 1; i <= Math.ceil(totalItems / itemsPerPage); i++) {
-    pageNumbers.push(i);
-  }
+    ));
+  };
 
   return (
-    <div className="pagination">
-      <button
-        className="page-button"
-        onClick={prevPage}
-        disabled={currentPage === 1}
-      >
-        Previous
-      </button>
-      {pageNumbers.map(number => (
-        <button
-          key={number}
-          className={`page-button ${number === currentPage ? 'active' : ''}`}
-          onClick={() => paginate(number)}
-        >
-          {number}
+    <div>
+      <h1>Employee Data Table</h1>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>{renderTableData()}</tbody>
+      </table>
+      <div>
+        <button onClick={handlePreviousPage} disabled={page === 1}>
+          Previous
         </button>
-      ))}
-      <button
-        className="page-button"
-        onClick={nextPage}
-        disabled={currentPage === pageNumbers.length}
-      >
-        Next
-      </button>
+        <span>{page}</span>
+        <button onClick={handleNextPage} disabled={page === totalPages}>
+          Next
+        </button>
+      </div>
     </div>
   );
 };
 
-export default App;
+export default Pagination;
