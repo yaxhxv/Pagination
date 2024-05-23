@@ -59,9 +59,13 @@ const Pagination = () => {
   return (
     <div>
       <h1>Employee Data Table</h1>
-      <table>
+      <table style={{
+        justifyContent:"center"
+      }}>
         <thead>
-          <tr>
+          <tr style={{
+            backgroundColor:"rgb(36, 185, 128)"
+          }}>
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
@@ -70,12 +74,26 @@ const Pagination = () => {
         </thead>
         <tbody>{renderTableData()}</tbody>
       </table>
-      <div>
-        <button onClick={handlePreviousPage} disabled={page === 1}>
-          Previous
+      <div style={{
+        display:"flex",
+        // justifyContent:"center"
+     
+      }}>
+        <button style={{
+          backgroundColor:"rgb(36, 185, 128)",
+             paddingRight:"10px"
+        }} onClick={handlePreviousPage} disabled={page === 1}>
+        Previous
         </button>
-        <span>{page}</span>
-        <button onClick={handleNextPage} disabled={page === totalPages}>
+        <span style={{
+          backgroundColor:"rgb(36, 185, 128)",
+             paddingRight:"10px",
+             paddingLeft:"10px"
+        }}>{page}</span>
+        <button style={{
+          backgroundColor:"rgb(36, 185, 128)",
+             paddingRight:"10px"
+        }} onClick={handleNextPage} disabled={page === totalPages}>
           Next
         </button>
       </div>
